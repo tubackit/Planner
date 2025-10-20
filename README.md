@@ -155,7 +155,7 @@ cd android-app
 |----------|--------|
 | 22.12.2025 - 07.01.2026 | Weihnachtsferien |
 | 30.03.2026 - 10.04.2026 | Osterferien |
-| 06.07.2026 - 14.08.2026 | Sommerferien |
+| 29.06.2026 - 07.08.2026 | Sommerferien |
 | 05.10.2026 - 16.10.2026 | Herbstferien |
 | 21.12.2026 - 06.01.2027 | Weihnachtsferien |
 
