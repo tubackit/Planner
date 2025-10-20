@@ -748,8 +748,8 @@
                         dayCell.className = 'weekend';
                     }
                     
-                    // Mark school vacations first (lower priority)
-                    if (isInSchoolVacation(formattedDate)) {
+                    // Mark school vacations first (lower priority) - nur an Werktagen
+                    if (isInSchoolVacation(formattedDate) && dayOfWeek !== 0 && dayOfWeek !== 6) {
                         dayCell.className += ' school-vacation';
                         const vacation = getSchoolVacation(formattedDate);
                         if (vacation) {
@@ -816,8 +816,8 @@
                             dayCell.className = 'weekend';
                         }
                         
-                    // Mark school vacations first (lower priority)
-                    if (isInSchoolVacation(formattedDate)) {
+                    // Mark school vacations first (lower priority) - nur an Werktagen
+                    if (isInSchoolVacation(formattedDate) && dayOfWeek !== 0 && dayOfWeek !== 6) {
                         dayCell.className += ' school-vacation';
                         const vacation = getSchoolVacation(formattedDate);
                         if (vacation) {
