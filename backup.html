@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urlaubsplaner - Backup & Restore</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4a86e8;
+        }
+        
+        h2 {
+            color: #4a86e8;
+            margin-top: 0;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background-color: #4a86e8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #3a76d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 134, 232, 0.4);
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .info-box {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            border-left: 4px solid #2196F3;
+        }
+        
+        .info-box strong {
+            color: #2196F3;
+        }
+        
+        pre {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #4a86e8;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Backup & Restore</h1>
+        <p class="subtitle">Sichere deine Urlaubsplaner-Daten oder stelle sie wieder her</p>
+        
+        <!-- Export Section -->
+        <div class="section">
+            <h2>📥 Daten exportieren (Backup erstellen)</h2>
+            <p>Erstelle eine Sicherungskopie aller Daten als JSON-Datei.</p>
+            
+            <button class="btn" onclick="exportAllData()" data-test-id="export-btn" aria-label="Alle Daten exportieren">
+                ⬇️ Alle Daten exportieren
+            </button>
+            
+            <button class="btn" onclick="exportYear(2025)" data-test-id="export-2025-btn" aria-label="Nur 2025 exportieren">
+                📅 Nur 2025 exportieren
+            </button>
+            
+            <button class="btn" onclick="exportYear(2026)" data-test-id="export-2026-btn" aria-label="Nur 2026 exportieren">
+                📅 Nur 2026 exportieren
+            </button>
+            
+            <div class="info-box">
+                <strong>💡 Tipp:</strong> Exportiere regelmäßig deine Daten als Backup auf deinem Computer!
+            </div>
+        </div>
+        
+        <!-- Import Section -->
+        <div class="section">
+            <h2>📤 Daten importieren (Backup wiederherstellen)</h2>
+            <p>Stelle Daten aus einer Backup-Datei wieder her.</p>
+            
+            <input type="file" id="importFile" class="file-input" accept=".json" onchange="importData(event)">
+            <button class="btn btn-success" onclick="document.getElementById('importFile').click()" data-test-id="import-btn" aria-label="Backup importieren">
+                ⬆️ Backup-Datei auswählen
+            </button>
+            
+            <div class="info-box">
+                <strong>⚠️ Achtung:</strong> Der Import überschreibt alle aktuellen Daten!
+            </div>
+        </div>
+        
+        <!-- Firebase Export Section -->
+        <div class="section">
+            <h2>☁️ Firebase direkt exportieren</h2>
+            <p>Exportiere Daten direkt aus der Firebase Console:</p>
+            
+            <ol>
+                <li>Öffne: <a href="https://console.firebase.google.com/project/urlaubsplaner-9439f/database/urlaubsplaner-9439f-default-rtdb/data" target="_blank">Firebase Console</a></li>
+                <li>Klicke auf die 3 Punkte ⋮ neben "urlaubsplaner"</li>
+                <li>Wähle "Export JSON"</li>
+                <li>Speichere die Datei</li>
+            </ol>
+        </div>
+        
+        <!-- Delete Section -->
+        <div class="section">
+            <h2>🗑️ Daten löschen</h2>
+            <p>Lösche alle Daten (Vorsicht: Kann nicht rückgängig gemacht werden!)</p>
+            
+            <button class="btn btn-danger" onclick="deleteAllDataConfirm()" data-test-id="delete-btn" aria-label="Alle Daten löschen">
+                🗑️ Alle Daten löschen
+            </button>
+        </div>
+        
+        <div id="status" class="status"></div>
+        
+        <a href="index.html" class="back-link">← Zurück zum Urlaubsplaner</a>
+    </div>
+
+    <!-- Firebase Configuration -->
+    <script src="firebase-config.js"></script>
+
+    <script>
+        // Show status message
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Export all data
+        async function exportAllData() {
+            try {
+                showStatus('📦 Exportiere Daten...', 'info');
+                
+                const snapshot = await database.ref('urlaubsplaner').once('value');
+                const data = snapshot.val();
+                
+                if (!data) {
+                    showStatus('❌ Keine Daten zum Exportieren gefunden!', 'error');
+                    return;
+                }
+                
+                // Create JSON file
+                const json = JSON.stringify(data, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create download link
+                const a = document.createElement('a');
+                a.href = url;
+                const date = new Date().toISOString().split('T')[0];
+                const time = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
+                a.download = `urlaubsplaner-backup-${date}_${time}.json`;
+                a.click();
+                
+                URL.revokeObjectURL(url);
+                
+                showStatus('✅ Daten erfolgreich exportiert!', 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showStatus('❌ Fehler beim Exportieren: ' + error.message, 'error');
+            }
+        }
+        
+        // Export specific year
+        async function exportYear(year) {
+            try {
+                showStatus(`📦 Exportiere Daten für ${year}...`, 'info');
+                
+                const snapshot = await database.ref('urlaubsplaner').once('value');
+                const allData = snapshot.val();
+                
+                if (!allData) {
+                    showStatus('❌ Keine Daten gefunden!', 'error');
+                    return;
+                }
+                
+                // Create year-specific export
+                const yearData = {
+                    employees: allData.employees || [],
+                    vacationData: {
+                        [year]: allData.vacationData?.[year] || {}
+                    },
+                    currentYear: year,
+                    exportDate: new Date().toISOString(),
+                    exportYear: year
+                };
+                
+                // Create JSON file
+                const json = JSON.stringify(yearData, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                // Create download link
+                const a = document.createElement('a');
+                a.href = url;
+                const date = new Date().toISOString().split('T')[0];
+                a.download = `urlaubsplaner-${year}-backup-${date}.json`;
+                a.click();
+                
+                URL.revokeObjectURL(url);
+                
+                showStatus(`✅ Daten für ${year} erfolgreich exportiert!`, 'success');
+            } catch (error) {
+                console.error('Export error:', error);
+                showStatus('❌ Fehler beim Exportieren: ' + error.message, 'error');
+            }
+        }
+        
+        // Import data
+        async function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!confirm('⚠️ ACHTUNG: Der Import überschreibt alle aktuellen Daten!\n\nMöchtest du fortfahren?')) {
+                event.target.value = ''; // Reset file input
+                return;
+            }
+            
+            try {
+                showStatus('📤 Importiere Daten...', 'info');
+                
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        // Import to Firebase
+                        await database.ref('urlaubsplaner').set(data);
+                        
+                        showStatus('✅ Daten erfolgreich importiert! Seite wird neu geladen...', 'success');
+                        
+                        // Reload page after 2 seconds
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+                        
+                    } catch (error) {
+                        console.error('Import error:', error);
+                        showStatus('❌ Fehler beim Importieren: ' + error.message, 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+                
+            } catch (error) {
+                console.error('File read error:', error);
+                showStatus('❌ Fehler beim Lesen der Datei: ' + error.message, 'error');
+            }
+            
+            // Reset file input
+            event.target.value = '';
+        }
+        
+        // Delete all data with confirmation
+        function deleteAllDataConfirm() {
+            const confirmation = prompt('⚠️ WARNUNG: Dies löscht ALLE Daten unwiderruflich!\n\nTippe "LÖSCHEN" um zu bestätigen:');
+            
+            if (confirmation === 'LÖSCHEN') {
+                deleteAllData();
+            } else {
+                showStatus('❌ Löschen abgebrochen', 'info');
+            }
+        }
+        
+        // Delete all data
+        async function deleteAllData() {
+            try {
+                showStatus('🗑️ Lösche alle Daten...', 'info');
+                
+                await database.ref('urlaubsplaner').remove();
+                
+                showStatus('✅ Alle Daten wurden gelöscht!', 'success');
+                
+                // Reload after 2 seconds
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                console.error('Delete error:', error);
+                showStatus('❌ Fehler beim Löschen: ' + error.message, 'error');
+            }
+        }
+        
+        // Check Firebase connection on load
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof firebase === 'undefined') {
+                showStatus('❌ Firebase nicht geladen! Überprüfe deine Internetverbindung.', 'error');
+            } else {
+                showStatus('✅ Mit Firebase verbunden', 'success');
+            }
+        });
+    </script>
+</body>
+</html>
+
