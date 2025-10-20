@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Urlaubsplaner">
+    <title>Urlaubsplaner</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+            overscroll-behavior: none;
+            /* iOS-spezifische Optimierungen */
+            -webkit-overflow-scrolling: touch;
+            -webkit-text-size-adjust: 100%;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        /* App-Inhalt */
+        .app-container {
+            padding: 10px;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        /* Header mit Navigation */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px;
+            background-color: #4a86e8;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        /* Querformat-Header */
+        @media screen and (orientation: landscape) {
+            .app-header {
+                padding: 5px;
+                border-radius: 5px 5px 0 0;
+            }
+            
+            .app-title {
+                font-size: 16px;
+            }
+            
+            .nav-button {
+                font-size: 18px;
+                padding: 3px 8px;
+            }
+        }
+        
+        .app-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            flex-grow: 1;
+        }
+        
+        .nav-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
+        /* Tabs für Navigation */
+        .tabs {
+            display: flex;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab {
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom-color: #4a86e8;
+            color: #4a86e8;
+            font-weight: bold;
+        }
+        
+        /* Monatsauswahl */
+        .month-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: white;
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 44px;
+            z-index: 99;
+        }
+        
+        .month-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .month-nav {
+            background: none;
+            border: none;
+            font-size: 18px;
+            padding: 0 10px;
+            cursor: pointer;
+            color: #4a86e8;
+        }
+        
+        /* Kalender - Desktop-ähnliche Tabellen-Ansicht */
+        .calendar-container {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            max-height: 100vh;
+        }
+        
+        /* Querformat-Optimierung */
+        @media screen and (min-width: 768px), screen and (orientation: landscape) {
+            .calendar-container {
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            .app-container {
+                padding: 5px;
+            }
+            
+            .month-selector {
+                padding: 5px;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                background-color: white;
+            }
+            
+            .legend {
+                display: none; /* Verstecke Legende im Querformat */
+            }
+            
+            .legend.landscape-visible {
+                display: block;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background-color: white;
+                border: 2px solid #4a86e8;
+                border-radius: 10px;
+                padding: 15px;
+                z-index: 1000;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                max-width: 90vw;
+            }
+            
+            .bottom-nav {
+                display: none; /* Verstecke Bottom Navigation im Querformat */
+            }
+            
+            .day-cell {
+                min-width: 25px;
+                height: 20px;
+                font-size: 8px;
+            }
+            
+            .day-header {
+                min-width: 20px;
+                height: 18px;
+                font-size: 7px;
+            }
+            
+            .employee-cell {
+                min-width: 100px;
+                font-size: 11px;
+            }
+            
+            .month-header {
+                font-size: 10px;
+                padding: 2px;
+            }
+            
+            .legend-toggle {
+                display: inline-block;
+                background-color: #4a86e8;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 5px 10px;
+                font-size: 12px;
+                cursor: pointer;
+                margin-left: 10px;
+            }
+        }
+        
+        /* JavaScript-basierte Querformat-Erkennung */
+        body.landscape-mode .calendar-container {
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        body.landscape-mode .app-container {
+            padding: 5px;
+        }
+        
+        body.landscape-mode .month-selector {
+            padding: 5px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: white;
+        }
+        
+        body.landscape-mode .legend {
+            display: none;
+        }
+        
+        body.landscape-mode .legend.landscape-visible {
+            display: block;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border: 2px solid #4a86e8;
+            border-radius: 10px;
+            padding: 15px;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-width: 90vw;
+        }
+        
+        body.landscape-mode .bottom-nav {
+            display: none;
+        }
+        
+        body.landscape-mode .day-cell {
+            min-width: 25px;
+            height: 20px;
+            font-size: 8px;
+        }
+        
+        body.landscape-mode .day-header {
+            min-width: 20px;
+            height: 18px;
+            font-size: 7px;
+        }
+        
+        body.landscape-mode .employee-cell {
+            min-width: 100px;
+            font-size: 11px;
+        }
+        
+        body.landscape-mode .month-header {
+            font-size: 10px;
+            padding: 2px;
+        }
+        
+        body.landscape-mode .legend-toggle {
+            display: inline-block !important;
+            background-color: #4a86e8;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        
+        .calendar-table {
+            width: max-content;
+            min-width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .calendar-table th,
+        .calendar-table td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: center;
+            min-width: 25px;
+            height: 25px;
+        }
+        
+        .calendar-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .month-header {
+            background-color: #e53935 !important;
+            color: white !important;
+            font-weight: bold;
+        }
+        
+        .day-header {
+            background-color: #f8f9fa;
+            font-size: 8px;
+            font-weight: bold;
+            min-width: 20px;
+            height: 20px;
+            border: 1px solid #ddd;
+        }
+        
+        .employee-cell {
+            min-width: 120px;
+            text-align: left;
+            font-weight: bold;
+            position: sticky;
+            left: 0;
+            background-color: #f2f2f2;
+            z-index: 5;
+        }
+        
+        .day-cell {
+            min-width: 30px;
+            height: 25px;
+            position: relative;
+            cursor: pointer;
+            font-size: 9px;
+            font-weight: bold;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+            vertical-align: middle;
+            padding: 1px;
+            white-space: nowrap;
+            overflow: visible;
+            background-color: white;
+            color: black;
+        }
+        
+        .day-cell:hover {
+            background-color: #f0f8ff;
+            transform: scale(1.1);
+        }
+        
+        .vacation-counter {
+            text-align: center;
+            font-weight: bold;
+            background-color: #f8f9fa;
+            position: sticky;
+            right: 0;
+            z-index: 5;
+        }
+        
+        .day-number {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .weekend {
+            background-color: #f2f2f2;
+        }
+        
+        .today {
+            border: 3px solid red !important;
+            background-color: #ffebee !important;
+            font-weight: bold !important;
+            color: #d32f2f !important;
+            box-shadow: 0 0 8px 2px rgba(255, 0, 0, 0.3) !important;
+        }
+        
+        .holiday {
+            background-color: #ffcccc;
+            position: relative;
+        }
+        
+        .holiday::after {
+            content: "F";
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 8px;
+            color: #e53935;
+        }
+        
+        .school-vacation {
+            background-color: #e8f5e9;
+            position: relative;
+        }
+        
+        .school-vacation::after {
+            content: "S";
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 8px;
+            color: #43a047;
+        }
+        
+        .holiday.school-vacation {
+            background-color: #ffcccc;
+        }
+        
+        .holiday.school-vacation::after {
+            content: "F";
+            color: #e53935;
+        }
+        
+        .employee-indicators {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1px;
+            margin-top: 2px;
+            width: 100%;
+        }
+        
+        .employee-indicator {
+            min-width: 18px;
+            height: 18px;
+            border-radius: 2px;
+            background-color: #e0e0e0;
+            color: #666;
+            font-size: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            flex: 1;
+            max-width: 22px;
+        }
+        
+        .employee-indicator:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Verstecke die Initialen - zeige nur Farben */
+        .employee-indicator::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 3px;
+            background-color: transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .employee-indicator.vacation-u::before {
+            background-color: #4a86e8;
+        }
+        
+        .employee-indicator.vacation-k::before {
+            background-color: #6aa84f;
+        }
+        
+        .employee-indicator.vacation-gz::before {
+            background-color: #f1c232;
+        }
+        
+        /* Verstecke Text wenn Urlaub gesetzt ist */
+        .employee-indicator.vacation-u,
+        .employee-indicator.vacation-k,
+        .employee-indicator.vacation-gz {
+            color: transparent;
+        }
+        
+        /* Bessere Sichtbarkeit für leere Indikatoren */
+        .employee-indicator:not(.vacation-u):not(.vacation-k):not(.vacation-gz) {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+        }
+        
+        .vacation-u {
+            background-color: #4a86e8;
+            color: white;
+        }
+        
+        .vacation-k {
+            background-color: #6aa84f;
+            color: white;
+        }
+        
+        .vacation-gz {
+            background-color: #f1c232;
+            color: black;
+        }
+        
+        /* Entferne die alten Indikator-Styles */
+        .employee-indicators {
+            display: none;
+        }
+        
+        .employee-indicator {
+            display: none;
+        }
+        
+        /* Legende */
+        .legend {
+            background-color: white;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+            border-radius: 2px;
+        }
+        
+        /* Einstellungen Panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            padding: 15px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        
+        .settings-panel.active {
+            transform: translateX(0);
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .settings-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            background-color: #4a86e8;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .btn:active {
+            background-color: #3a76d8;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        /* Mitarbeiterliste */
+        .employee-list {
+            margin-top: 15px;
+        }
+        
+        .employee-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px 10px 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .employee-name {
+            font-weight: 500;
+            flex-grow: 1;
+        }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #e53935;
+            font-size: 24px;
+            padding: 5px 10px;
+            cursor: pointer;
+            min-width: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .delete-btn:active {
+            background-color: #ffebee;
+            border-radius: 50%;
+        }
+        
+        /* Dialog für Urlaubseintrag */
+        .vacation-dialog {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            z-index: 1001;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .vacation-dialog.active {
+            transform: translateY(0);
+        }
+        
+        .dialog-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+        
+        .dialog-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .dialog-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .dialog-close {
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #666;
+        }
+        
+        .vacation-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .vacation-option {
+            padding: 15px 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .vacation-option.urlaub {
+            background-color: #4a86e8;
+            color: white;
+        }
+        
+        .vacation-option.krank {
+            background-color: #6aa84f;
+            color: white;
+        }
+        
+        .vacation-option.gleitzeit {
+            background-color: #f1c232;
+            color: black;
+        }
+        
+        .vacation-option.loeschen {
+            background-color: #f5f5f5;
+            color: #e53935;
+        }
+        
+        /* Overlay für Dialoge */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 90;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .nav-item.active {
+            color: #4a86e8;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+        
+        /* Anpassungen für kleine Bildschirme */
+        @media (max-width: 480px) {
+            .weekdays div {
+                font-size: 0.7rem;
+                padding: 5px 0;
+            }
+
+            .day {
+                padding: 3px;
+                min-height: 25px;
+            }
+
+            .day-number {
+                font-size: 0.75rem;
+            }
+
+            .legend-items {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="app-title">Urlaubsplaner <span id="year-display">2025</span></div>
+            <button class="nav-button" id="settings-button">⚙️</button>
+        </div>
+        
+        <!-- Year Selector -->
+        <div class="month-selector">
+            <button class="month-nav" id="prev-month">◀</button>
+            <div class="month-title" id="month-title">Jahr 2025</div>
+            <button class="month-nav" id="next-month">▶</button>
+            <button class="legend-toggle" onclick="toggleLegend()" style="display: none;">Legende</button>
+        </div>
+        
+        <!-- Calendar -->
+        <div class="calendar-container">
+            <table class="calendar-table" id="vacation-planner">
+                <!-- Tabelle wird dynamisch erstellt -->
+            </table>
+        </div>
+        
+        <!-- Legend -->
+        <div class="legend">
+            <div class="legend-title">Legende</div>
+            <div class="legend-items">
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ffcccb;"></div>
+                    <span>Feiertage</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #ffeaa7;"></div>
+                    <span>Schulferien</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #f8f9fa;"></div>
+                    <span>Wochenenden</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #e8f4f8;"></div>
+                    <span>Heute</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #4a86e8;"></div>
+                    <span>Urlaub</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #6aa84f;"></div>
+                    <span>Krankheit</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background-color: #f1c232;"></div>
+                    <span>Gleitzeit</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" id="nav-calendar">
+            <div class="nav-icon">📅</div>
+            <div>Kalender</div>
+        </div>
+        <div class="nav-item" id="nav-employees">
+            <div class="nav-icon">👥</div>
+            <div>Mitarbeiter</div>
+        </div>
+        <div class="nav-item" id="nav-settings">
+            <div class="nav-icon">⚙️</div>
+            <div>Einstellungen</div>
+        </div>
+    </div>
+    
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settings-panel">
+        <div class="settings-header">
+            <div class="settings-title">Einstellungen</div>
+            <button class="close-btn" id="close-settings">&times;</button>
+        </div>
+        
+        <div class="section-title">Kalenderjahr</div>
+        <div class="form-group">
+            <label for="year-select">Jahr auswählen:</label>
+            <select id="year-select">
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+            </select>
+        </div>
+        <button class="btn" id="change-year-btn">Kalenderjahr ändern</button>
+        
+        <div class="section-title">Mitarbeiter verwalten</div>
+        <div class="form-group">
+            <label for="employee-name">Name des Mitarbeiters:</label>
+            <input type="text" id="employee-name" placeholder="Name eingeben">
+        </div>
+        <button class="btn" id="add-employee-btn">Mitarbeiter hinzufügen</button>
+        
+        <div class="employee-list" id="employee-list">
+            <!-- Mitarbeiterliste wird dynamisch eingefügt -->
+        </div>
+    </div>
+    
+    <!-- Vacation Dialog -->
+    <div class="vacation-dialog" id="vacation-dialog">
+        <div class="dialog-header">
+            <div class="dialog-title" id="vacation-date">Eintrag für 15.10.2025</div>
+            <div class="dialog-subtitle" id="vacation-employee">Max Mustermann</div>
+            <button class="dialog-close" id="close-vacation">&times;</button>
+        </div>
+        
+        <div class="vacation-options">
+            <div class="vacation-option urlaub" data-value="u">Urlaub</div>
+            <div class="vacation-option krank" data-value="k">Krankheit</div>
+            <div class="vacation-option gleitzeit" data-value="gz">Gleitzeit</div>
+            <div class="vacation-option loeschen" data-value="">Löschen</div>
+        </div>
+    </div>
+    
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+    
+    <script src="main.js"></script>
+</body>
+</html>

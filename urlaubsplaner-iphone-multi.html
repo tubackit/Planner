@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Urlaubsplaner">
+    <title>Urlaubsplaner</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            padding: 10px;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .header {
+            background-color: #4a86e8;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .year-selector {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .year-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .year-btn {
+            background-color: #f8f9fa;
+            color: #333;
+            border: 2px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .year-btn.active {
+            background-color: #4a86e8;
+            color: white;
+            border-color: #4a86e8;
+        }
+        
+        .year-btn:hover {
+            background-color: #e9ecef;
+        }
+        
+        .year-btn.active:hover {
+            background-color: #357abd;
+        }
+        
+        .add-employee {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .add-btn {
+            background-color: #4a86e8;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        .employees {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .employee-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .employee-item:last-child {
+            border-bottom: none;
+        }
+        
+        .delete-btn {
+            background-color: #e53935;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .calendar {
+            background-color: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            position: relative;
+        }
+        
+        .vacation-count {
+            background-color: #4a86e8;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        
+        .vacation-count.sick {
+            background-color: #e53935;
+            margin-left: 4px;
+        }
+        
+        .calendar-scrollable {
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+        
+        .calendar-table {
+            width: max-content;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        
+        .month-header {
+            background-color: #e53935;
+            color: white;
+            padding: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .day-header {
+            background-color: #f8f9fa;
+            padding: 5px;
+            text-align: center;
+            border: 1px solid #ddd;
+            min-width: 30px;
+        }
+        
+        .employee-cell {
+            background-color: #f8f9fa !important;
+            padding: 5px;
+            border: 1px solid #ddd;
+            min-width: 100px;
+            font-weight: bold;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        .employee-header {
+            background-color: #f8f9fa !important;
+            padding: 5px;
+            border: 1px solid #ddd;
+            min-width: 100px;
+            font-weight: bold;
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        .day-cell {
+            border: 1px solid #ddd;
+            padding: 3px;
+            text-align: center;
+            min-width: 30px;
+            height: 25px;
+            cursor: pointer;
+            background-color: white;
+        }
+        
+        .day-cell:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .weekend {
+            background-color: #f8f9fa !important;
+        }
+        
+        .today {
+            background-color: #fff3cd !important;
+            border: 2px solid #e53935 !important;
+        }
+        
+        .holiday {
+            background-color: #ffebee !important;
+            color: #c62828 !important;
+            font-weight: bold !important;
+        }
+        
+        .school-vacation {
+            background-color: #e8f5e8 !important;
+            color: #2e7d32 !important;
+            font-weight: bold !important;
+        }
+        
+        .vacation-u {
+            background-color: #4a86e8 !important;
+            color: white !important;
+        }
+        
+        .vacation-k {
+            background-color: #e53935 !important;
+            color: white !important;
+        }
+        
+        .vacation-gz {
+            background-color: #f1c232 !important;
+            color: black !important;
+        }
+        
+        .dialog {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .dialog.show {
+            transform: translateY(0);
+        }
+        
+        .dialog-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .dialog-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .dialog-subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .option {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+        }
+        
+        .option.urlaub {
+            background-color: #4a86e8;
+            color: white;
+        }
+        
+        .option.krank {
+            background-color: #e53935;
+            color: white;
+        }
+        
+        .option.gleitzeit {
+            background-color: #f1c232;
+            color: black;
+        }
+        
+        .option.loeschen {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+        
+        .overlay.show {
+            display: block;
+        }
+        
+        
+        @media screen and (orientation: landscape) {
+            .calendar {
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+            
+            .day-cell {
+                min-width: 25px;
+                height: 20px;
+                font-size: 10px;
+            }
+            
+            .day-header {
+                min-width: 25px;
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Urlaubsplaner</h1>
+    </div>
+    
+    <div class="year-selector">
+        <h3>Jahr auswählen</h3>
+        <div class="year-buttons">
+            <button class="year-btn active" onclick="switchYear(2025)">2025</button>
+            <button class="year-btn" onclick="switchYear(2026)">2026</button>
+        </div>
+    </div>
+    
+    <div class="add-employee">
+        <button class="add-btn" onclick="addEmployee()">👥 Mitarbeiter hinzufügen</button>
+    </div>
+    
+    <div class="employees">
+        <h3>Aktuelle Mitarbeiter</h3>
+        <div id="employee-list">
+            <!-- Mitarbeiter werden hier eingefügt -->
+        </div>
+    </div>
+    
+    <div class="calendar">
+        <div class="calendar-scrollable">
+            <table class="calendar-table" id="calendar-table">
+                <!-- Kalender wird hier eingefügt -->
+            </table>
+        </div>
+    </div>
+    
+    <div class="overlay" id="overlay" onclick="closeDialog()"></div>
+    
+    <div class="dialog" id="vacation-dialog">
+        <button class="close-btn" onclick="closeDialog()">&times;</button>
+        <div class="dialog-header">
+            <div class="dialog-title" id="dialog-title">Urlaub eintragen</div>
+            <div class="dialog-subtitle" id="dialog-subtitle">Datum und Mitarbeiter</div>
+        </div>
+        <div class="options">
+            <button class="option urlaub" onclick="setVacation('u')">Urlaub</button>
+            <button class="option krank" onclick="setVacation('k')">Krankheit</button>
+            <button class="option gleitzeit" onclick="setVacation('gz')">Gleitzeit</button>
+            <button class="option loeschen" onclick="setVacation('')">Löschen</button>
+        </div>
+    </div>
+    
+    <script>
+        let currentYear = 2025;
+        let employees = ['Max Mustermann'];
+        let vacationData = {};
+        let selectedDate = '';
+        let selectedEmployee = '';
+        
+        // Feiertage und Schulferien für beide Jahre
+        const holidays2025 = {
+            '01.01': 'Neujahr',
+            '06.01': 'Heilige Drei Könige',
+            '18.04': 'Karfreitag',
+            '21.04': 'Ostermontag',
+            '01.05': 'Tag der Arbeit',
+            '29.05': 'Christi Himmelfahrt',
+            '09.06': 'Pfingstmontag',
+            '19.06': 'Fronleichnam',
+            '03.10': 'Tag der Deutschen Einheit',
+            '01.11': 'Allerheiligen',
+            '25.12': '1. Weihnachtsfeiertag',
+            '26.12': '2. Weihnachtsfeiertag'
+        };
+        
+        const holidays2026 = {
+            '01.01': 'Neujahr',
+            '06.01': 'Heilige Drei Könige',
+            '03.04': 'Karfreitag',
+            '06.04': 'Ostermontag',
+            '01.05': 'Tag der Arbeit',
+            '14.05': 'Christi Himmelfahrt',
+            '25.05': 'Pfingstmontag',
+            '04.06': 'Fronleichnam',
+            '03.10': 'Tag der Deutschen Einheit',
+            '01.11': 'Allerheiligen',
+            '25.12': '1. Weihnachtsfeiertag',
+            '26.12': '2. Weihnachtsfeiertag'
+        };
+        
+        const schoolVacations2025 = [
+            { start: '14.04.2025', end: '25.04.2025', name: 'Osterferien' },
+            { start: '07.07.2025', end: '15.08.2025', name: 'Sommerferien' },
+            { start: '13.10.2025', end: '24.10.2025', name: 'Herbstferien' },
+            { start: '22.12.2025', end: '07.01.2026', name: 'Weihnachtsferien' }
+        ];
+        
+        const schoolVacations2026 = [
+            { start: '30.03.2026', end: '10.04.2026', name: 'Osterferien' },
+            { start: '29.06.2026', end: '07.08.2026', name: 'Sommerferien' },
+            { start: '05.10.2026', end: '16.10.2026', name: 'Herbstferien' },
+            { start: '23.12.2026', end: '08.01.2027', name: 'Weihnachtsferien' }
+        ];
+        
+        // Aktuelle Feiertage und Schulferien abrufen
+        function getCurrentHolidays() {
+            return currentYear === 2025 ? holidays2025 : holidays2026;
+        }
+        
+        function getCurrentSchoolVacations() {
+            let vacations = currentYear === 2025 ? schoolVacations2025 : schoolVacations2026;
+            
+            // Für 2026: Auch Weihnachtsferien 2025 hinzufügen, die bis Januar 2026 gehen
+            if (currentYear === 2026) {
+                const christmas2025 = schoolVacations2025.find(v => v.name === 'Weihnachtsferien');
+                if (christmas2025) {
+                    vacations = [...vacations, christmas2025];
+                }
+            }
+            
+            return vacations;
+        }
+        
+        // Prüfen ob Datum in Schulferien liegt (nur Werktage)
+        function isInSchoolVacation(dateStr, dayOfWeek) {
+            // Nur Werktage prüfen (Montag = 1 bis Freitag = 5)
+            if (dayOfWeek === 0 || dayOfWeek === 6) {
+                return false;
+            }
+            
+            const [day, month] = dateStr.split('.');
+            const date = new Date(currentYear, parseInt(month) - 1, parseInt(day));
+            const schoolVacations = getCurrentSchoolVacations();
+            
+            return schoolVacations.some(vacation => {
+                const [startDay, startMonth, startYear] = vacation.start.split('.');
+                const [endDay, endMonth, endYear] = vacation.end.split('.');
+                
+                const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1, parseInt(startDay));
+                const endDate = new Date(parseInt(endYear), parseInt(endMonth) - 1, parseInt(endDay));
+                
+                return date >= startDate && date <= endDate;
+            });
+        }
+        
+        // Jahr wechseln
+        function switchYear(year) {
+            currentYear = year;
+            
+            // Button-Styles aktualisieren
+            document.querySelectorAll('.year-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Header aktualisieren
+            document.querySelector('.header h1').textContent = `Urlaubsplaner ${year}`;
+            
+            // Daten für das neue Jahr laden
+            loadData();
+            renderEmployees();
+            createCalendar();
+            
+            console.log(`Zu Jahr ${year} gewechselt`);
+        }
+        
+        // Zum aktuellen Tag scrollen
+        function scrollToToday() {
+            // Mehrfache Versuche mit verschiedenen Verzögerungen
+            setTimeout(() => {
+                performScrollToToday();
+            }, 500);
+            
+            setTimeout(() => {
+                performScrollToToday();
+            }, 1000);
+            
+            setTimeout(() => {
+                performScrollToToday();
+            }, 2000);
+            
+            setTimeout(() => {
+                performScrollToToday();
+            }, 3000);
+        }
+        
+        function performScrollToToday() {
+            const today = new Date();
+            const todayStr = `${today.getDate().toString().padStart(2, '0')}.${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+            
+            console.log(`Suche nach heutigem Tag: ${todayStr}`);
+            
+            // Nur scrollen wenn wir im aktuellen Jahr sind
+            if (today.getFullYear() !== currentYear) {
+                console.log(`Heute ist nicht in ${currentYear}, scrolle zum Jahresanfang`);
+                const calendarScrollable = document.querySelector('.calendar-scrollable');
+                if (calendarScrollable) {
+                    calendarScrollable.scrollLeft = 0;
+                }
+                return;
+            }
+            
+            // Finde die tatsächliche Zelle für den heutigen Tag
+            const calendarScrollable = document.querySelector('.calendar-scrollable');
+            if (!calendarScrollable) {
+                console.log('Kalender-Container nicht gefunden');
+                return;
+            }
+            
+            // Prüfe ob Kalender-Zellen bereits gerendert sind
+            const dayCells = calendarScrollable.querySelectorAll('.day-cell');
+            console.log(`Gefundene Kalender-Zellen: ${dayCells.length}`);
+            
+            if (dayCells.length === 0) {
+                console.log('Kalender-Zellen noch nicht gerendert, warte...');
+                return;
+            }
+            
+            // Suche nach der Zelle mit dem heutigen Tag
+            let targetCell = null;
+            
+            for (let cell of dayCells) {
+                const cellDate = cell.getAttribute('data-date');
+                if (cellDate === todayStr) {
+                    targetCell = cell;
+                    break;
+                }
+            }
+            
+            if (targetCell) {
+                // Scrolle zur gefundenen Zelle
+                const cellRect = targetCell.getBoundingClientRect();
+                const containerRect = calendarScrollable.getBoundingClientRect();
+                const cellLeft = cellRect.left - containerRect.left + calendarScrollable.scrollLeft;
+                const containerWidth = calendarScrollable.clientWidth;
+                
+                // Berechne die Mitte: Position der Zelle minus halbe Container-Breite
+                const centerPosition = cellLeft - (containerWidth / 2) + (cellRect.width / 2);
+                
+                calendarScrollable.scrollLeft = Math.max(0, centerPosition);
+                console.log(`Zum heutigen Tag gescrollt: ${todayStr} (Zelle gefunden, Position: ${centerPosition})`);
+            } else {
+                console.log(`Zelle für ${todayStr} nicht gefunden, verwende Berechnung`);
+                
+                // Fallback: Verwende die mathematische Berechnung
+                const daysInMonth = currentYear === 2026 ? [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] : [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                let totalDays = 0;
+                
+                for (let month = 0; month < today.getMonth(); month++) {
+                    totalDays += daysInMonth[month];
+                }
+                totalDays += today.getDate() - 1;
+                
+                const cellWidth = 32;
+                const containerWidth = calendarScrollable.clientWidth;
+                const scrollPosition = totalDays * cellWidth;
+                const centerPosition = scrollPosition - (containerWidth / 2);
+                
+                calendarScrollable.scrollLeft = Math.max(0, centerPosition);
+                console.log(`Fallback-Berechnung: ${totalDays} Tage * ${cellWidth}px = ${centerPosition}px`);
+            }
+        }
+        
+        // App initialisieren
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('App wird initialisiert...');
+            loadData();
+            renderEmployees();
+            createCalendar();
+            
+            // Warte bis alles gerendert ist, dann scrolle zum heutigen Tag
+            setTimeout(() => {
+                console.log('Starte scrollToToday nach DOM-Initialisierung...');
+                scrollToToday();
+            }, 100);
+            
+            console.log('App initialisiert!');
+        });
+        
+        // Daten laden
+        function loadData() {
+            const savedEmployees = localStorage.getItem(`employees${currentYear}`);
+            if (savedEmployees) {
+                employees = JSON.parse(savedEmployees);
+            } else {
+                employees = ['Max Mustermann'];
+            }
+            
+            const savedVacation = localStorage.getItem(`vacationData${currentYear}`);
+            if (savedVacation) {
+                vacationData = JSON.parse(savedVacation);
+            } else {
+                vacationData = {};
+            }
+        }
+        
+        // Daten speichern
+        function saveData() {
+            localStorage.setItem(`employees${currentYear}`, JSON.stringify(employees));
+            localStorage.setItem(`vacationData${currentYear}`, JSON.stringify(vacationData));
+        }
+        
+        // Mitarbeiter hinzufügen
+        function addEmployee() {
+            const name = prompt('Mitarbeiter-Name eingeben:');
+            if (name && name.trim()) {
+                employees.push(name.trim());
+                saveData();
+                renderEmployees();
+                createCalendar();
+            }
+        }
+        
+        // Mitarbeiter entfernen
+        function removeEmployee(index) {
+            if (confirm(`Möchten Sie "${employees[index]}" wirklich entfernen?`)) {
+                employees.splice(index, 1);
+                saveData();
+                renderEmployees();
+                createCalendar();
+            }
+        }
+        
+        // Mitarbeiterliste rendern
+        function renderEmployees() {
+            const list = document.getElementById('employee-list');
+            list.innerHTML = '';
+            
+            employees.forEach((employee, index) => {
+                const item = document.createElement('div');
+                item.className = 'employee-item';
+                
+                // Berechne Urlaubstage für diesen Mitarbeiter
+                let vacationDays = 0;
+                let sickDays = 0;
+                
+                Object.keys(vacationData).forEach(dateStr => {
+                    if (vacationData[dateStr][employee]) {
+                        const type = vacationData[dateStr][employee];
+                        const [day, month] = dateStr.split('.');
+                        const date = new Date(currentYear, parseInt(month) - 1, parseInt(day));
+                        
+                        // Nur Werktage zählen (keine Wochenenden)
+                        if (date.getDay() !== 0 && date.getDay() !== 6) {
+                            switch(type) {
+                                case 'u':
+                                    vacationDays++;
+                                    break;
+                                case 'k':
+                                    sickDays++;
+                                    break;
+                            }
+                        }
+                    }
+                });
+                
+                // Erstelle Badges für Urlaubstage
+                let badges = '';
+                if (vacationDays > 0) {
+                    badges += `<span class="vacation-count">${vacationDays}</span>`;
+                }
+                if (sickDays > 0) {
+                    badges += `<span class="vacation-count sick">${sickDays}</span>`;
+                }
+                
+                item.innerHTML = `
+                    <span>${employee}${badges}</span>
+                    <button class="delete-btn" onclick="removeEmployee(${index})">×</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        
+        // Kalender erstellen
+        function createCalendar() {
+            console.log(`Kalender für ${currentYear} wird erstellt...`);
+            const table = document.getElementById('calendar-table');
+            table.innerHTML = '';
+            
+            // Monats-Header
+            const monthRow = document.createElement('tr');
+            const employeeHeader = document.createElement('th');
+            employeeHeader.textContent = 'Mitarbeiter';
+            employeeHeader.className = 'employee-header';
+            monthRow.appendChild(employeeHeader);
+            
+            const months = ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'];
+            const daysInMonth = currentYear === 2026 ? [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] : [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+            
+            months.forEach((month, monthIndex) => {
+                const monthHeader = document.createElement('th');
+                monthHeader.textContent = month;
+                monthHeader.className = 'month-header';
+                monthHeader.colSpan = daysInMonth[monthIndex];
+                monthRow.appendChild(monthHeader);
+            });
+            
+            table.appendChild(monthRow);
+            
+            // Tages-Header
+            const dayRow = document.createElement('tr');
+            const dayHeader = document.createElement('th');
+            dayHeader.textContent = 'Tag';
+            dayHeader.className = 'employee-header';
+            dayRow.appendChild(dayHeader);
+            
+            const holidays = getCurrentHolidays();
+            
+            months.forEach((month, monthIndex) => {
+                for (let day = 1; day <= daysInMonth[monthIndex]; day++) {
+                    const dayHeader = document.createElement('th');
+                    dayHeader.textContent = day;
+                    dayHeader.className = 'day-header';
+                    
+                    const dateStr = `${day.toString().padStart(2, '0')}.${(monthIndex + 1).toString().padStart(2, '0')}`;
+                    dayHeader.setAttribute('data-date', dateStr);
+                    const date = new Date(currentYear, monthIndex, day);
+                    
+                    if (date.getDay() === 0 || date.getDay() === 6) {
+                        dayHeader.classList.add('weekend');
+                    }
+                    
+                    const today = new Date();
+                    if (date.toDateString() === today.toDateString()) {
+                        dayHeader.classList.add('today');
+                    }
+                    
+                    // Feiertag markieren
+                    if (holidays[dateStr]) {
+                        dayHeader.classList.add('holiday');
+                        dayHeader.title = holidays[dateStr];
+                    }
+                    
+                    // Schulferien markieren (nur Werktage)
+                    if (isInSchoolVacation(dateStr, date.getDay())) {
+                        dayHeader.classList.add('school-vacation');
+                        dayHeader.title = 'Schulferien';
+                    }
+                    
+                    dayRow.appendChild(dayHeader);
+                }
+            });
+            
+            table.appendChild(dayRow);
+            
+            // Mitarbeiter-Zeilen
+            employees.forEach((employee, employeeIndex) => {
+                const row = document.createElement('tr');
+                
+                const employeeCell = document.createElement('td');
+                employeeCell.textContent = employee;
+                employeeCell.className = 'employee-cell';
+                row.appendChild(employeeCell);
+                
+                months.forEach((month, monthIndex) => {
+                    for (let day = 1; day <= daysInMonth[monthIndex]; day++) {
+                        const dayCell = document.createElement('td');
+                        dayCell.className = 'day-cell';
+                        
+                        const dateStr = `${day.toString().padStart(2, '0')}.${(monthIndex + 1).toString().padStart(2, '0')}`;
+                        dayCell.setAttribute('data-date', dateStr);
+                        const date = new Date(currentYear, monthIndex, day);
+                        
+                        if (date.getDay() === 0 || date.getDay() === 6) {
+                            dayCell.classList.add('weekend');
+                        }
+                        
+                        if (date.toDateString() === new Date().toDateString()) {
+                            dayCell.classList.add('today');
+                        }
+                        
+                        // Feiertag markieren
+                        if (holidays[dateStr]) {
+                            dayCell.classList.add('holiday');
+                            dayCell.title = holidays[dateStr];
+                        }
+                        
+                        // Schulferien markieren (nur Werktage)
+                        if (isInSchoolVacation(dateStr, date.getDay())) {
+                            dayCell.classList.add('school-vacation');
+                            dayCell.title = 'Schulferien';
+                        }
+                        
+                        if (vacationData[dateStr] && vacationData[dateStr][employee]) {
+                            const type = vacationData[dateStr][employee];
+                            dayCell.classList.add(`vacation-${type}`);
+                            dayCell.textContent = type.toUpperCase();
+                        }
+                        
+                        dayCell.onclick = () => openDialog(dateStr, employee);
+                        
+                        row.appendChild(dayCell);
+                    }
+                });
+                
+                table.appendChild(row);
+            });
+            
+            console.log(`Kalender für ${currentYear} erstellt!`);
+        }
+        
+        // Dialog öffnen
+        function openDialog(dateStr, employee) {
+            selectedDate = dateStr;
+            selectedEmployee = employee;
+            
+            document.getElementById('dialog-title').textContent = `Urlaub für ${employee}`;
+            document.getElementById('dialog-subtitle').textContent = `Datum: ${dateStr}.${currentYear}`;
+            
+            document.getElementById('overlay').classList.add('show');
+            document.getElementById('vacation-dialog').classList.add('show');
+        }
+        
+        // Dialog schließen
+        function closeDialog() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('vacation-dialog').classList.remove('show');
+        }
+        
+        // Urlaub setzen
+        function setVacation(type) {
+            if (!vacationData[selectedDate]) {
+                vacationData[selectedDate] = {};
+            }
+            
+            if (type === '') {
+                delete vacationData[selectedDate][selectedEmployee];
+            } else {
+                vacationData[selectedDate][selectedEmployee] = type;
+            }
+            
+            saveData();
+            createCalendar();
+            renderEmployees();
+            closeDialog();
+        }
+    </script>
+</body>
+</html>

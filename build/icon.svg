@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Hintergrund -->
+  <rect width="512" height="512" rx="60" fill="#4a86e8"/>
+  
+  <!-- Kalender-Körper -->
+  <rect x="80" y="120" width="352" height="320" rx="20" fill="white"/>
+  
+  <!-- Kalender-Kopf -->
+  <rect x="80" y="120" width="352" height="60" rx="20" fill="#e53935"/>
+  
+  <!-- Kalender-Linien -->
+  <line x1="80" y1="240" x2="432" y2="240" stroke="#e0e0e0" stroke-width="4"/>
+  <line x1="80" y1="300" x2="432" y2="300" stroke="#e0e0e0" stroke-width="4"/>
+  <line x1="80" y1="360" x2="432" y2="360" stroke="#e0e0e0" stroke-width="4"/>
+  
+  <line x1="150" y1="180" x2="150" y2="440" stroke="#e0e0e0" stroke-width="4"/>
+  <line x1="220" y1="180" x2="220" y2="440" stroke="#e0e0e0" stroke-width="4"/>
+  <line x1="290" y1="180" x2="290" y2="440" stroke="#e0e0e0" stroke-width="4"/>
+  <line x1="360" y1="180" x2="360" y2="440" stroke="#e0e0e0" stroke-width="4"/>
+  
+  <!-- Kalender-Aufhängung -->
+  <rect x="140" y="80" width="30" height="40" rx="10" fill="#424242"/>
+  <rect x="340" y="80" width="30" height="40" rx="10" fill="#424242"/>
+  
+  <!-- Aktuelles Datum -->
+  <text x="256" y="320" font-family="Arial" font-size="120" font-weight="bold" fill="#4a86e8" text-anchor="middle" dominant-baseline="middle">25</text>
+</svg>
+

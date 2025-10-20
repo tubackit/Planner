@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Urlaubsplaner</string>
+    <string name="settings">Einstellungen</string>
+    <string name="calendar">Kalender</string>
+    <string name="employees">Mitarbeiter</string>
+    <string name="add_employee">Mitarbeiter hinzufügen</string>
+    <string name="employee_name">Name des Mitarbeiters</string>
+    <string name="change_year">Kalenderjahr ändern</string>
+    <string name="select_year">Jahr auswählen</string>
+    <string name="year_2025">2025</string>
+    <string name="year_2026">2026</string>
+    <string name="legend">Legende</string>
+    <string name="holidays">Feiertage</string>
+    <string name="school_vacations">Schulferien</string>
+    <string name="weekends">Wochenenden</string>
+    <string name="today">Heute</string>
+    <string name="vacation">Urlaub</string>
+    <string name="sick">Krankheit</string>
+    <string name="flex_time">Gleitzeit</string>
+    <string name="delete">Löschen</string>
+</resources>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#4a86e8</color>
+    <color name="primary_dark">#3a76d8</color>
+    <color name="accent">#f1c232</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="light_gray">#f5f5f5</color>
+    <color name="medium_gray">#e0e0e0</color>
+    <color name="dark_gray">#666666</color>
+    <color name="holiday_color">#ffcccb</color>
+    <color name="school_vacation_color">#ffeaa7</color>
+    <color name="weekend_color">#f8f9fa</color>
+    <color name="today_color">#e8f4f8</color>
+    <color name="vacation_color">#4a86e8</color>
+    <color name="sick_color">#6aa84f</color>
+    <color name="flex_time_color">#f1c232</color>
+</resources>

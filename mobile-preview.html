@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Urlaubsplaner Mobile</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+            font-size: 14px;
+            overscroll-behavior: none;
+        }
+        
+        /* Smartphone-Rahmen für die Vorschau */
+        .phone-frame {
+            max-width: 375px;
+            height: 667px;
+            margin: 20px auto;
+            border: 16px solid #111;
+            border-radius: 36px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            background-color: white;
+        }
+        
+        .phone-content {
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        /* Status-Leiste */
+        .status-bar {
+            height: 24px;
+            background-color: #333;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+            font-size: 12px;
+        }
+        
+        .status-bar .time {
+            font-weight: bold;
+        }
+        
+        .status-bar .icons {
+            display: flex;
+            gap: 5px;
+        }
+        
+        /* App-Inhalt */
+        .app-container {
+            padding: 10px;
+            height: calc(100% - 24px);
+            overflow-y: auto;
+        }
+        
+        /* Header mit Navigation */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 5px;
+            background-color: #4a86e8;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .app-title {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            flex-grow: 1;
+        }
+        
+        .nav-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        
+        /* Tabs für Navigation */
+        .tabs {
+            display: flex;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .tab {
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            border-bottom-color: #4a86e8;
+            color: #4a86e8;
+            font-weight: bold;
+        }
+        
+        /* Monatsauswahl */
+        .month-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: white;
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 44px;
+            z-index: 99;
+        }
+        
+        .month-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .month-nav {
+            background: none;
+            border: none;
+            font-size: 18px;
+            padding: 0 10px;
+            cursor: pointer;
+            color: #4a86e8;
+        }
+        
+        /* Kalender */
+        .calendar {
+            background-color: white;
+            border-radius: 0 0 10px 10px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .weekday {
+            padding: 8px 0;
+            font-size: 12px;
+        }
+        
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background-color: #eee;
+        }
+        
+        .day {
+            background-color: white;
+            aspect-ratio: 1;
+            position: relative;
+            min-height: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2px;
+        }
+        
+        .day-number {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .weekend {
+            background-color: #f8f9fa;
+        }
+        
+        .today {
+            background-color: #e8f4f8;
+        }
+        
+        .holiday {
+            background-color: #ffcccb;
+            position: relative;
+        }
+        
+        .holiday::after {
+            content: "F";
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 8px;
+            color: #e53935;
+            font-weight: bold;
+        }
+        
+        .school-vacation {
+            background-color: #ffeaa7;
+        }
+        
+        .holiday.school-vacation {
+            background-color: #ffcccb;
+        }
+        
+        .holiday.school-vacation::after {
+            content: "F";
+            color: #e53935;
+        }
+        
+        .employee-indicators {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2px;
+            margin-top: 2px;
+        }
+        
+        .employee-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .vacation-u {
+            background-color: #4a86e8;
+        }
+        
+        .vacation-k {
+            background-color: #6aa84f;
+        }
+        
+        .vacation-gz {
+            background-color: #f1c232;
+        }
+        
+        /* Legende */
+        .legend {
+            background-color: white;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .legend-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .legend-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            margin-right: 5px;
+            border-radius: 2px;
+        }
+        
+        /* Einstellungen Panel */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            padding: 15px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        
+        .settings-panel.active {
+            transform: translateX(0);
+        }
+        
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .settings-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .btn {
+            background-color: #4a86e8;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        
+        .btn:active {
+            background-color: #3a76d8;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 20px 0 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        /* Mitarbeiterliste */
+        .employee-list {
+            margin-top: 15px;
+        }
+        
+        .employee-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .employee-name {
+            font-weight: 500;
+        }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #e53935;
+            font-size: 18px;
+            padding: 5px;
+            cursor: pointer;
+        }
+        
+        /* Dialog für Urlaubseintrag */
+        .vacation-dialog {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            z-index: 1001;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .vacation-dialog.active {
+            transform: translateY(0);
+        }
+        
+        .dialog-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            position: relative;
+        }
+        
+        .dialog-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .dialog-subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        .dialog-close {
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #666;
+        }
+        
+        .vacation-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .vacation-option {
+            padding: 15px 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .vacation-option.urlaub {
+            background-color: #4a86e8;
+            color: white;
+        }
+        
+        .vacation-option.krank {
+            background-color: #6aa84f;
+            color: white;
+        }
+        
+        .vacation-option.gleitzeit {
+            background-color: #f1c232;
+            color: black;
+        }
+        
+        .vacation-option.loeschen {
+            background-color: #f5f5f5;
+            color: #e53935;
+        }
+        
+        /* Overlay für Dialoge */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* Floating Action Button */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: #4a86e8;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 90;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 90;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .nav-item.active {
+            color: #4a86e8;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+        
+        /* Für die Vorschau-Zwecke */
+        .preview-note {
+            text-align: center;
+            padding: 10px;
+            background-color: #f8d7da;
+            color: #721c24;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-note">
+        Mobile App Vorschau - Urlaubsplaner für Rheinland-Pfalz
+    </div>
+    
+    <div class="phone-frame">
+        <div class="phone-content">
+            <div class="status-bar">
+                <div class="time">14:25</div>
+                <div class="icons">📶 📊 🔋</div>
+            </div>
+            
+            <div class="app-container">
+                <!-- Header -->
+                <div class="app-header">
+                    <button class="nav-button">☰</button>
+                    <div class="app-title">Urlaubsplaner 2025</div>
+                    <button class="nav-button" id="settings-button">⚙️</button>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="tabs">
+                    <div class="tab active">Kalender</div>
+                    <div class="tab">Übersicht</div>
+                    <div class="tab">Statistik</div>
+                </div>
+                
+                <!-- Month Selector -->
+                <div class="month-selector">
+                    <button class="month-nav">◀</button>
+                    <div class="month-title">Oktober 2025</div>
+                    <button class="month-nav">▶</button>
+                </div>
+                
+                <!-- Calendar -->
+                <div class="calendar">
+                    <div class="weekdays">
+                        <div class="weekday">Mo</div>
+                        <div class="weekday">Di</div>
+                        <div class="weekday">Mi</div>
+                        <div class="weekday">Do</div>
+                        <div class="weekday">Fr</div>
+                        <div class="weekday">Sa</div>
+                        <div class="weekday">So</div>
+                    </div>
+                    <div class="days">
+                        <!-- Leere Zellen für vorherigen Monat -->
+                        <div class="day"></div>
+                        <div class="day"></div>
+                        <div class="day"></div>
+                        
+                        <!-- Tage des Monats -->
+                        <div class="day">
+                            <div class="day-number">1</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">2</div>
+                        </div>
+                        <div class="day weekend">
+                            <div class="day-number">3</div>
+                        </div>
+                        <div class="day weekend holiday">
+                            <div class="day-number">4</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">5</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">6</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">7</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">8</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">9</div>
+                        </div>
+                        <div class="day weekend">
+                            <div class="day-number">10</div>
+                        </div>
+                        <div class="day weekend">
+                            <div class="day-number">11</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">12</div>
+                        </div>
+                        <div class="day school-vacation">
+                            <div class="day-number">13</div>
+                            <div class="employee-indicators">
+                                <div class="employee-indicator vacation-u"></div>
+                            </div>
+                        </div>
+                        <div class="day school-vacation">
+                            <div class="day-number">14</div>
+                            <div class="employee-indicators">
+                                <div class="employee-indicator vacation-u"></div>
+                            </div>
+                        </div>
+                        <div class="day school-vacation today">
+                            <div class="day-number">15</div>
+                            <div class="employee-indicators">
+                                <div class="employee-indicator vacation-u"></div>
+                            </div>
+                        </div>
+                        <div class="day school-vacation">
+                            <div class="day-number">16</div>
+                            <div class="employee-indicators">
+                                <div class="employee-indicator vacation-u"></div>
+                            </div>
+                        </div>
+                        <div class="day school-vacation">
+                            <div class="day-number">17</div>
+                            <div class="employee-indicators">
+                                <div class="employee-indicator vacation-u"></div>
+                            </div>
+                        </div>
+                        <div class="day school-vacation weekend">
+                            <div class="day-number">18</div>
+                        </div>
+                        <div class="day school-vacation weekend">
+                            <div class="day-number">19</div>
+                        </div>
+                        <div class="day school-vacation">
+                            <div class="day-number">20</div>
+                            <div class="employee-indicators">
+                                <div class="employee-indicator vacation-u"></div>
+                            </div>
+                        </div>
+                        <div class="day school-vacation">
+                            <div class="day-number">21</div>
+                            <div class="employee-indicators">
+                                <div class="employee-indicator vacation-u"></div>
+                            </div>
+                        </div>
+                        <div class="day school-vacation">
+                            <div class="day-number">22</div>
+                            <div class="employee-indicators">
+                                <div class="employee-indicator vacation-u"></div>
+                            </div>
+                        </div>
+                        <div class="day school-vacation">
+                            <div class="day-number">23</div>
+                            <div class="employee-indicators">
+                                <div class="employee-indicator vacation-u"></div>
+                            </div>
+                        </div>
+                        <div class="day school-vacation">
+                            <div class="day-number">24</div>
+                            <div class="employee-indicators">
+                                <div class="employee-indicator vacation-u"></div>
+                            </div>
+                        </div>
+                        <div class="day weekend">
+                            <div class="day-number">25</div>
+                        </div>
+                        <div class="day weekend">
+                            <div class="day-number">26</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">27</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">28</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">29</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">30</div>
+                        </div>
+                        <div class="day">
+                            <div class="day-number">31</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Legend -->
+                <div class="legend">
+                    <div class="legend-title">Legende</div>
+                    <div class="legend-items">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #ffcccb;"></div>
+                            <span>Feiertage</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #ffeaa7;"></div>
+                            <span>Schulferien</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f8f9fa;"></div>
+                            <span>Wochenenden</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #e8f4f8;"></div>
+                            <span>Heute</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #4a86e8;"></div>
+                            <span>Urlaub</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #6aa84f;"></div>
+                            <span>Krankheit</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f1c232;"></div>
+                            <span>Gleitzeit</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Navigation -->
+            <div class="bottom-nav">
+                <div class="nav-item active">
+                    <div class="nav-icon">📅</div>
+                    <div>Kalender</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">👥</div>
+                    <div>Mitarbeiter</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">⚙️</div>
+                    <div>Einstellungen</div>
+                </div>
+            </div>
+            
+            <!-- Settings Panel -->
+            <div class="settings-panel" id="settings-panel">
+                <div class="settings-header">
+                    <div class="settings-title">Einstellungen</div>
+                    <button class="close-btn" id="close-settings">&times;</button>
+                </div>
+                
+                <div class="section-title">Kalenderjahr</div>
+                <div class="form-group">
+                    <label for="year-select">Jahr auswählen:</label>
+                    <select id="year-select">
+                        <option value="2025">2025</option>
+                        <option value="2026">2026</option>
+                    </select>
+                </div>
+                <button class="btn">Kalenderjahr ändern</button>
+                
+                <div class="section-title">Mitarbeiter verwalten</div>
+                <div class="form-group">
+                    <label for="employee-name">Name des Mitarbeiters:</label>
+                    <input type="text" id="employee-name" placeholder="Name eingeben">
+                </div>
+                <button class="btn">Mitarbeiter hinzufügen</button>
+                
+                <div class="employee-list">
+                    <div class="employee-item">
+                        <div class="employee-name">Tubacki Thomas</div>
+                        <button class="delete-btn">&times;</button>
+                    </div>
+                    <div class="employee-item">
+                        <div class="employee-name">Tubacki Birgit</div>
+                        <button class="delete-btn">&times;</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Vacation Dialog -->
+            <div class="vacation-dialog" id="vacation-dialog">
+                <div class="dialog-header">
+                    <div class="dialog-title">Eintrag für 15.10.2025</div>
+                    <div class="dialog-subtitle">Tubacki Thomas</div>
+                    <button class="dialog-close">&times;</button>
+                </div>
+                
+                <div class="vacation-options">
+                    <div class="vacation-option urlaub">Urlaub</div>
+                    <div class="vacation-option krank">Krankheit</div>
+                    <div class="vacation-option gleitzeit">Gleitzeit</div>
+                    <div class="vacation-option loeschen">Löschen</div>
+                </div>
+            </div>
+            
+            <!-- Overlay -->
+            <div class="overlay" id="overlay"></div>
+        </div>
+    </div>
+    
+    <div class="preview-note">
+        Diese Vorschau zeigt die mobile Benutzeroberfläche der Android-App.<br>
+        Alle Funktionen der Desktop-Version wurden für die mobile Nutzung optimiert.
+    </div>
+    
+    <script>
+        // Einfache Interaktion für die Vorschau
+        document.getElementById('settings-button').addEventListener('click', function() {
+            document.getElementById('settings-panel').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+        });
+        
+        document.getElementById('close-settings').addEventListener('click', function() {
+            document.getElementById('settings-panel').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        });
+        
+        // Klick auf einen Tag mit Urlaub zeigt Dialog
+        document.querySelector('.day.today').addEventListener('click', function() {
+            document.getElementById('vacation-dialog').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+        });
+        
+        document.querySelector('.dialog-close').addEventListener('click', function() {
+            document.getElementById('vacation-dialog').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
+        });
+        
+        // Overlay schließt alle Dialoge
+        document.getElementById('overlay').addEventListener('click', function() {
+            document.getElementById('settings-panel').classList.remove('active');
+            document.getElementById('vacation-dialog').classList.remove('active');
+            this.classList.remove('active');
+        });
+    </script>
+</body>
+</html>
