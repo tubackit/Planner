@@ -1,0 +1,82 @@
+{
+  "name": "urlaubsplaner",
+  "version": "1.0.0",
+  "description": "Ein übersichtlicher Urlaubsplaner für die Jahre 2025/2026, der Feiertage und Schulferien in Rheinland-Pfalz anzeigt und die Möglichkeit bietet, Urlaub, Krankheitstage und Gleitzeittage für verschiedene Mitarbeiter zu erfassen.",
+  "main": "main.js",
+  "devDependencies": {
+    "electron": "^38.2.2",
+    "electron-builder": "^26.0.12",
+    "md-to-pdf": "^5.2.4"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder build --win",
+    "build:mac": "electron-builder build --mac",
+    "build:all": "electron-builder build -mwl"
+  },
+  "build": {
+    "appId": "com.urlaubsplaner.app",
+    "productName": "Urlaubsplaner",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/.{idea,git,github,vscode}",
+      "!**/{.DS_Store,.git,.gitignore}"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "icon": "build/icons/icon.png"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "artifactName": "${productName}-${version}.${ext}",
+      "category": "public.app-category.productivity",
+      "icon": "build/icons/icon.png"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Urlaubsplaner"
+    }
+  },
+  "keywords": [
+    "urlaubsplaner",
+    "kalender",
+    "feiertage",
+    "schulferien"
+  ],
+  "author": "",
+  "license": "ISC"
+}

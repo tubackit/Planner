@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urlaubsplaner 2025</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: max-content;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: center;
+            min-width: 25px;
+            height: 25px;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 8px 12px;
+            background-color: #4a86e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn:hover {
+            background-color: #3a76d8;
+        }
+        
+        .btn-danger {
+            background-color: #e53935;
+        }
+        
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        
+        .month-header {
+            background-color: #4a86e8;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .employee-cell {
+            min-width: 120px;
+            text-align: left;
+            font-weight: bold;
+            position: sticky;
+            left: 0;
+            background-color: #f2f2f2;
+            z-index: 1;
+        }
+        
+        .weekend {
+            background-color: #f2f2f2;
+        }
+        
+        .today {
+            border: 2px dashed red;
+            background-color: #ffeeee;
+        }
+        
+        .holiday {
+            background-color: #ffcccc;
+            position: relative;
+        }
+        
+        .holiday::after {
+            content: "F";
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 8px;
+            color: #e53935;
+        }
+        
+        .school-vacation {
+            background-color: #e8f5e9;
+            position: relative;
+        }
+        
+        .school-vacation::after {
+            content: "S";
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 8px;
+            color: #43a047;
+        }
+        
+        /* Ensure holidays have priority over school vacations */
+        .holiday.school-vacation {
+            background-color: #ffcccc;
+        }
+        
+        .holiday.school-vacation::after {
+            content: "F";
+            color: #e53935;
+        }
+        
+        .vacation-u {
+            background-color: #4a86e8;
+            color: white;
+        }
+        
+        .vacation-k {
+            background-color: #6aa84f;
+            color: white;
+        }
+        
+        .vacation-gz {
+            background-color: #f1c232;
+            color: black;
+        }
+        
+        .vacation-counter {
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: fixed;
+            background-color: #f9f9f9;
+            min-width: 80px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1000;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .dropdown-content a {
+            color: black;
+            padding: 6px 8px;
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+        }
+        
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        
+        .show {
+            display: block;
+        }
+        
+        .employee-form {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: none; /* Hide employee management by default */
+        }
+        
+        .employee-list {
+            margin-bottom: 20px;
+            display: none; /* Hide employee list by default */
+        }
+        
+        .employee-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 5px;
+        }
+        
+        .form-group {
+            margin-bottom: 10px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .legend {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .legend-item {
+            display: inline-block;
+            margin-right: 15px;
+        }
+        
+        .legend-color {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            vertical-align: middle;
+        }
+        
+        .legend-holiday {
+            background-color: #ffcccc;
+        }
+        
+        .legend-school {
+            background-color: #e8f5e9;
+        }
+        
+        .legend-weekend {
+            background-color: #f2f2f2;
+        }
+        
+        .legend-vacation-u {
+            background-color: #4a86e8;
+        }
+        
+        .legend-vacation-k {
+            background-color: #6aa84f;
+        }
+        
+        .legend-vacation-gz {
+            background-color: #f1c232;
+        }
+        
+        .tooltip {
+            position: absolute;
+            display: none;
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 5px;
+            border-radius: 3px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 2000;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span>Urlaubsplaner 2025</span>
+        <button id="settings-btn" class="btn" data-test-id="settings-btn" aria-label="Einstellungen öffnen">
+            ⚙️ Einstellungen
+        </button>
+    </div>
+    
+    <div class="employee-form" id="employee-form">
+        <h3>Mitarbeiter verwalten</h3>
+        <div class="form-group">
+            <label for="employee-name">Name des Mitarbeiters:</label>
+            <input type="text" id="employee-name" placeholder="Name eingeben" data-test-id="employee-name-input" aria-label="Name des Mitarbeiters eingeben">
+        </div>
+        <button id="add-employee-btn" class="btn" data-test-id="add-employee-btn" aria-label="Mitarbeiter hinzufügen">Mitarbeiter hinzufügen</button>
+        
+        <hr style="margin: 20px 0;">
+        
+        <h3>Kalenderjahr</h3>
+        <div class="form-group">
+            <select id="year-select" class="form-control" data-test-id="year-select" aria-label="Kalenderjahr auswählen">
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+            </select>
+        </div>
+        <button id="change-year-btn" class="btn" data-test-id="change-year-btn" aria-label="Kalenderjahr ändern">Kalenderjahr ändern</button>
+    </div>
+    
+    <div class="employee-list" id="employee-list">
+        <h3>Aktuelle Mitarbeiter</h3>
+        <!-- Employee list will be generated here -->
+    </div>
+    
+    <div class="legend">
+        <div class="legend-item"><span class="legend-color legend-holiday"></span> Feiertage RLP</div>
+        <div class="legend-item"><span class="legend-color legend-school"></span> Schulferien RLP</div>
+        <div class="legend-item"><span class="legend-color legend-weekend"></span> Wochenenden</div>
+        <div class="legend-item"><span class="legend-color legend-vacation-u"></span> Urlaub (U)</div>
+        <div class="legend-item"><span class="legend-color legend-vacation-k"></span> Krank (K)</div>
+        <div class="legend-item"><span class="legend-color legend-vacation-gz"></span> Gleitzeit (GZ)</div>
+    </div>
+    
+    <div class="container">
+        <table id="vacation-planner">
+            <!-- Table will be generated by JavaScript -->
+        </table>
+    </div>
+    
+    <!-- Tooltip for showing holiday names -->
+    <div id="tooltip" class="tooltip"></div>
+    
+    <!-- Dropdown menu for vacation selection -->
+    <div id="vacation-dropdown" class="dropdown-content">
+        <a data-value="u" data-test-id="vacation-option-u" aria-label="Urlaub auswählen">U (Urlaub)</a>
+        <a data-value="k" data-test-id="vacation-option-k" aria-label="Krank auswählen">K (Krank)</a>
+        <a data-value="gz" data-test-id="vacation-option-gz" aria-label="Gleitzeit auswählen">GZ (Gleitzeit)</a>
+        <a data-value="" data-test-id="vacation-option-clear" aria-label="Eintrag löschen">Löschen</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configuration
+            let currentYear = 2025;
+            let employees = [];
+            
+            // DOM Elements
+            const settingsBtn = document.getElementById('settings-btn');
+            const employeeForm = document.getElementById('employee-form');
+            const employeeList = document.getElementById('employee-list');
+            const employeeNameInput = document.getElementById('employee-name');
+            const addEmployeeBtn = document.getElementById('add-employee-btn');
+            const yearSelect = document.getElementById('year-select');
+            const changeYearBtn = document.getElementById('change-year-btn');
+            
+            // Initialize employees from file system (Electron) or localStorage (Web)
+            async function initializeEmployees() {
+                let savedEmployees = null;
+                
+                // Check if running in Electron
+                if (window.electronAPI) {
+                    try {
+                        // Load using Electron API
+                        const result = await window.electronAPI.loadEmployees();
+                        
+                        if (result.success && result.employees) {
+                            savedEmployees = result.employees;
+                        }
+                    } catch (error) {
+                        console.error('Fehler beim Laden der Mitarbeiter:', error);
+                    }
+                } else {
+                    // Fallback to localStorage for web version
+                    const savedData = localStorage.getItem('vacationPlannerEmployees');
+                    if (savedData) {
+                        savedEmployees = JSON.parse(savedData);
+                    }
+                }
+                
+                if (savedEmployees) {
+                    employees = savedEmployees;
+                } else {
+                    // Default employee (only Max Mustermann)
+                    employees = ['Max Mustermann'];
+                    await saveEmployees();
+                }
+                renderEmployeeList();
+            }
+            
+            // Toggle settings visibility
+            settingsBtn.addEventListener('click', function() {
+                employeeForm.style.display = employeeForm.style.display === 'block' ? 'none' : 'block';
+                employeeList.style.display = employeeList.style.display === 'block' ? 'none' : 'block';
+            });
+            
+            // Add employee function
+            addEmployeeBtn.addEventListener('click', addEmployee);
+            
+            function addEmployee() {
+                const name = employeeNameInput.value.trim();
+                if (name) {
+                    employees.push(name);
+                    saveEmployees();
+                    renderEmployeeList();
+                    createVacationPlanner();
+                    loadVacationData();
+                    employeeNameInput.value = '';
+                }
+            }
+            
+            // Change year function
+            changeYearBtn.addEventListener('click', changeYear);
+            
+            function changeYear() {
+                const selectedYear = parseInt(yearSelect.value);
+                if (selectedYear !== currentYear) {
+                    currentYear = selectedYear;
+                    
+                    // Update holidays and school vacations for the selected year
+                    holidays = holidaysByYear[currentYear];
+                    schoolVacations = schoolVacationsByYear[currentYear];
+                    
+                    updateTitle();
+                    createVacationPlanner();
+                    loadVacationData();
+                    
+                    // Save the current year preference
+                    localStorage.setItem('vacationPlannerYear', currentYear);
+                }
+            }
+            
+            // Update the title with the current year
+            function updateTitle() {
+                document.querySelector('.header span').textContent = `Urlaubsplaner ${currentYear}`;
+            }
+            
+            // Allow adding employee by pressing Enter
+            employeeNameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addEmployee();
+                }
+            });
+            
+            // Save employees to file system (Electron) or localStorage (Web)
+            async function saveEmployees() {
+                // Check if running in Electron
+                if (window.electronAPI) {
+                    try {
+                        // Save using Electron API
+                        const result = await window.electronAPI.saveEmployees(employees);
+                        
+                        if (!result.success) {
+                            console.error('Fehler beim Speichern der Mitarbeiter:', result.error);
+                        }
+                    } catch (error) {
+                        console.error('Fehler beim Speichern der Mitarbeiter:', error);
+                    }
+                } else {
+                    // Fallback to localStorage for web version
+                    localStorage.setItem('vacationPlannerEmployees', JSON.stringify(employees));
+                }
+            }
+            
+            // Render employee list
+            function renderEmployeeList() {
+                // Clear the list except the heading
+                const heading = employeeList.querySelector('h3');
+                employeeList.innerHTML = '';
+                employeeList.appendChild(heading);
+                
+                if (employees.length === 0) {
+                    const emptyMessage = document.createElement('p');
+                    emptyMessage.textContent = 'Keine Mitarbeiter vorhanden. Bitte fügen Sie Mitarbeiter hinzu.';
+                    employeeList.appendChild(emptyMessage);
+                    return;
+                }
+                
+                employees.forEach((employee, index) => {
+                    const employeeItem = document.createElement('div');
+                    employeeItem.className = 'employee-item';
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = employee;
+                    
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'btn btn-danger';
+                    deleteBtn.textContent = 'Entfernen';
+                    deleteBtn.setAttribute('data-test-id', `delete-employee-${index}`);
+                    deleteBtn.setAttribute('aria-label', `Mitarbeiter ${employee} entfernen`);
+                    deleteBtn.addEventListener('click', () => {
+                        removeEmployee(index);
+                    });
+                    
+                    employeeItem.appendChild(nameSpan);
+                    employeeItem.appendChild(deleteBtn);
+                    employeeList.appendChild(employeeItem);
+                });
+            }
+            
+            // Remove employee
+            function removeEmployee(index) {
+                employees.splice(index, 1);
+                saveEmployees();
+                renderEmployeeList();
+                createVacationPlanner();
+                loadVacationData();
+            }
+            
+            // Holidays by year - Rheinland-Pfalz only
+            const holidaysByYear = {
+                2025: {
+                    '01.01': 'Neujahr',
+                    '18.04': 'Karfreitag',
+                    '21.04': 'Ostermontag',
+                    '01.05': 'Tag der Arbeit',
+                    '29.05': 'Christi Himmelfahrt',
+                    '09.06': 'Pfingstmontag',
+                    '19.06': 'Fronleichnam',
+                    '03.10': 'Tag der Deutschen Einheit',
+                    '01.11': 'Allerheiligen',
+                    '25.12': 'Erster Weihnachtstag',
+                    '26.12': 'Zweiter Weihnachtstag'
+                },
+                2026: {
+                    '01.01': 'Neujahr',
+                    '03.04': 'Karfreitag',
+                    '06.04': 'Ostermontag',
+                    '01.05': 'Tag der Arbeit',
+                    '14.05': 'Christi Himmelfahrt',
+                    '25.05': 'Pfingstmontag',
+                    '04.06': 'Fronleichnam',
+                    '03.10': 'Tag der Deutschen Einheit',
+                    '01.11': 'Allerheiligen',
+                    '25.12': 'Erster Weihnachtstag',
+                    '26.12': 'Zweiter Weihnachtstag'
+                }
+            };
+            
+            // School vacations by year - Rheinland-Pfalz only
+            const schoolVacationsByYear = {
+                2025: [
+                    { start: '23.12.2024', end: '03.01.2025', name: 'Weihnachtsferien' },
+                    { start: '14.04.2025', end: '25.04.2025', name: 'Osterferien' },
+                    { start: '07.07.2025', end: '15.08.2025', name: 'Sommerferien' },
+                    { start: '13.10.2025', end: '24.10.2025', name: 'Herbstferien' },
+                    { start: '22.12.2025', end: '07.01.2026', name: 'Weihnachtsferien' }
+                ],
+                2026: [
+                    { start: '22.12.2025', end: '07.01.2026', name: 'Weihnachtsferien' },
+                    { start: '30.03.2026', end: '10.04.2026', name: 'Osterferien' },
+                    { start: '06.07.2026', end: '14.08.2026', name: 'Sommerferien' },
+                    { start: '12.10.2026', end: '23.10.2026', name: 'Herbstferien' },
+                    { start: '21.12.2026', end: '06.01.2027', name: 'Weihnachtsferien' }
+                ]
+            };
+            
+            // Initialize the application asynchronously
+            async function initializeApplication() {
+                // First load employees
+                await initializeEmployees();
+                
+                // Load saved year preference
+                const savedYear = localStorage.getItem('vacationPlannerYear');
+                if (savedYear) {
+                    currentYear = parseInt(savedYear);
+                    yearSelect.value = currentYear;
+                }
+                
+                // Update the title with the current year
+                updateTitle();
+                
+                // Get current holidays and school vacations based on selected year
+                holidays = holidaysByYear[currentYear];
+                schoolVacations = schoolVacationsByYear[currentYear];
+                
+                // Create the table structure and load data after initialization
+                createVacationPlanner();
+                await loadVacationData();
+            }
+            
+            // Start the application
+            initializeApplication();
+            
+            // Scroll to current day after loading
+            setTimeout(scrollToCurrentDay, 500);
+            
+            // Function to create the vacation planner
+            function createVacationPlanner() {
+                const table = document.getElementById('vacation-planner');
+                table.innerHTML = ''; // Clear existing table
+                
+                const months = ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 
+                               'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'];
+                
+                // Create header rows
+                const monthRow = document.createElement('tr');
+                const dayRow = document.createElement('tr');
+                
+                // Add empty cell for employee column in month row
+                const emptyMonthCell = document.createElement('th');
+                emptyMonthCell.rowSpan = 2;
+                emptyMonthCell.textContent = 'Mitarbeiter';
+                emptyMonthCell.className = 'employee-cell';
+                monthRow.appendChild(emptyMonthCell);
+                
+                // Generate month and day headers
+                let currentDate = new Date(currentYear, 0, 1);
+                const endDate = new Date(currentYear, 11, 31);
+                
+                let currentMonth = -1;
+                let monthCell;
+                let daysInMonth = 0;
+                
+                while (currentDate <= endDate) {
+                    const month = currentDate.getMonth();
+                    const day = currentDate.getDate();
+                    
+                    // Create month header
+                    if (month !== currentMonth) {
+                        currentMonth = month;
+                        monthCell = document.createElement('th');
+                        monthCell.className = 'month-header';
+                        monthCell.textContent = months[month];
+                        daysInMonth = new Date(currentYear, month + 1, 0).getDate();
+                        monthCell.colSpan = daysInMonth;
+                        monthRow.appendChild(monthCell);
+                    }
+                    
+                    // Create day header
+                    const dayCell = document.createElement('th');
+                    dayCell.textContent = day;
+                    
+                    const formattedDate = formatDate(currentDate);
+                    
+                    // Mark weekends
+                    const dayOfWeek = currentDate.getDay();
+                    if (dayOfWeek === 0 || dayOfWeek === 6) {
+                        dayCell.className = 'weekend';
+                    }
+                    
+                    // Mark school vacations first (lower priority)
+                    if (isInSchoolVacation(formattedDate)) {
+                        dayCell.className += ' school-vacation';
+                        const vacation = getSchoolVacation(formattedDate);
+                        if (vacation) {
+                            dayCell.setAttribute('data-vacation', vacation.name);
+                            dayCell.addEventListener('mouseover', showVacationTooltip);
+                            dayCell.addEventListener('mouseout', hideTooltip);
+                        }
+                    }
+                    
+                    // Mark holidays second (higher priority)
+                    const shortDate = formattedDate.substring(0, 5); // DD.MM format
+                    if (holidays[shortDate]) {
+                        dayCell.className += ' holiday';
+                        dayCell.setAttribute('data-holiday', holidays[shortDate]);
+                        dayCell.addEventListener('mouseover', showHolidayTooltip);
+                        dayCell.addEventListener('mouseout', hideTooltip);
+                    }
+                    
+                    // Mark today
+                    const today = new Date();
+                    if (currentDate.getDate() === today.getDate() && 
+                        currentDate.getMonth() === today.getMonth() && 
+                        currentDate.getFullYear() === today.getFullYear()) {
+                        dayCell.className += ' today';
+                    }
+                    
+                    dayCell.setAttribute('data-date', formattedDate);
+                    dayRow.appendChild(dayCell);
+                    
+                    // Move to next day
+                    currentDate.setDate(currentDate.getDate() + 1);
+                }
+                
+                // Add vacation counter header
+                const vacationCounterHeader = document.createElement('th');
+                vacationCounterHeader.rowSpan = 2;
+                vacationCounterHeader.textContent = 'Urlaub genommen';
+                monthRow.appendChild(vacationCounterHeader);
+                
+                table.appendChild(monthRow);
+                table.appendChild(dayRow);
+                
+                // Create employee rows
+                employees.forEach(employee => {
+                    const employeeRow = document.createElement('tr');
+                    
+                    // Add employee name cell
+                    const employeeCell = document.createElement('td');
+                    employeeCell.textContent = employee;
+                    employeeCell.className = 'employee-cell';
+                    employeeRow.appendChild(employeeCell);
+                    
+                    // Reset date for day cells
+                    currentDate = new Date(currentYear, 0, 1);
+                    
+                    // Add day cells for each day of the year
+                    while (currentDate <= endDate) {
+                        const dayCell = document.createElement('td');
+                        const dayOfWeek = currentDate.getDay();
+                        const formattedDate = formatDate(currentDate);
+                        
+                        // Mark weekends
+                        if (dayOfWeek === 0 || dayOfWeek === 6) {
+                            dayCell.className = 'weekend';
+                        }
+                        
+                    // Mark school vacations first (lower priority)
+                    if (isInSchoolVacation(formattedDate)) {
+                        dayCell.className += ' school-vacation';
+                        const vacation = getSchoolVacation(formattedDate);
+                        if (vacation) {
+                            dayCell.setAttribute('data-vacation', vacation.name);
+                            dayCell.addEventListener('mouseover', showVacationTooltip);
+                            dayCell.addEventListener('mouseout', hideTooltip);
+                        }
+                    }
+                    
+                    // Mark holidays second (higher priority)
+                    const shortDate = formattedDate.substring(0, 5); // DD.MM format
+                    if (holidays[shortDate]) {
+                        dayCell.className += ' holiday';
+                        dayCell.setAttribute('data-holiday', holidays[shortDate]);
+                        dayCell.addEventListener('mouseover', showHolidayTooltip);
+                        dayCell.addEventListener('mouseout', hideTooltip);
+                    }
+                        
+                        // Mark today
+                        const today = new Date();
+                        if (currentDate.getDate() === today.getDate() && 
+                            currentDate.getMonth() === today.getMonth() && 
+                            currentDate.getFullYear() === today.getFullYear()) {
+                            dayCell.className += ' today';
+                        }
+                        
+                        dayCell.setAttribute('data-date', formattedDate);
+                        dayCell.setAttribute('data-employee', employee);
+                        dayCell.setAttribute('data-test-id', `vacation-cell-${formattedDate}-${employee.replace(/\s+/g, '-').toLowerCase()}`);
+                        dayCell.setAttribute('aria-label', `Urlaubseintrag für ${employee} am ${formattedDate}`);
+                        
+                        // Add click event for vacation selection
+                        dayCell.addEventListener('click', showVacationDropdown);
+                        
+                        employeeRow.appendChild(dayCell);
+                        
+                        // Move to next day
+                        currentDate.setDate(currentDate.getDate() + 1);
+                    }
+                    
+                    // Add vacation counter cell
+                    const counterCell = document.createElement('td');
+                    counterCell.className = 'vacation-counter';
+                    counterCell.setAttribute('data-employee', employee);
+                    counterCell.textContent = '0';
+                    employeeRow.appendChild(counterCell);
+                    
+                    table.appendChild(employeeRow);
+                });
+            }
+            
+            // Check if a date is in school vacation
+            function isInSchoolVacation(dateStr) {
+                const [day, month, year] = dateStr.split('.');
+                const date = new Date(`${year}-${month}-${day}`);
+                
+                return schoolVacations.some(vacation => {
+                    const [startDay, startMonth, startYear] = vacation.start.split('.');
+                    const [endDay, endMonth, endYear] = vacation.end.split('.');
+                    
+                    const startDate = new Date(`${startYear || year}-${startMonth}-${startDay}`);
+                    const endDate = new Date(`${endYear || year}-${endMonth}-${endDay}`);
+                    
+                    return date >= startDate && date <= endDate;
+                });
+            }
+            
+            // Get school vacation for a specific date
+            function getSchoolVacation(dateStr) {
+                const [day, month, year] = dateStr.split('.');
+                const date = new Date(`${year}-${month}-${day}`);
+                
+                return schoolVacations.find(vacation => {
+                    const [startDay, startMonth, startYear] = vacation.start.split('.');
+                    const [endDay, endMonth, endYear] = vacation.end.split('.');
+                    
+                    const startDate = new Date(`${startYear || year}-${startMonth}-${startDay}`);
+                    const endDate = new Date(`${endYear || year}-${endMonth}-${endDay}`);
+                    
+                    return date >= startDate && date <= endDate;
+                });
+            }
+            
+            // Show holiday tooltip
+            function showHolidayTooltip(event) {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.textContent = event.target.getAttribute('data-holiday');
+                tooltip.style.left = `${event.pageX + 10}px`;
+                tooltip.style.top = `${event.pageY + 10}px`;
+                tooltip.style.display = 'block';
+            }
+            
+            // Show vacation tooltip
+            function showVacationTooltip(event) {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.textContent = event.target.getAttribute('data-vacation');
+                tooltip.style.left = `${event.pageX + 10}px`;
+                tooltip.style.top = `${event.pageY + 10}px`;
+                tooltip.style.display = 'block';
+            }
+            
+            // Hide tooltip
+            function hideTooltip() {
+                const tooltip = document.getElementById('tooltip');
+                tooltip.style.display = 'none';
+            }
+            
+            // Format date as DD.MM.YYYY
+            function formatDate(date) {
+                const day = date.getDate().toString().padStart(2, '0');
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}.${month}.${year}`;
+            }
+            
+            // Show vacation dropdown menu
+            function showVacationDropdown(event) {
+                event.stopPropagation(); // Stop event from bubbling up
+                const cell = event.target;
+                
+                // Don't show dropdown for weekend cells or holiday cells
+                if (cell.classList.contains('weekend') || cell.classList.contains('holiday')) {
+                    return;
+                }
+                
+                const dropdown = document.getElementById('vacation-dropdown');
+                
+                // Hide any existing dropdown first
+                dropdown.classList.remove('show');
+                
+                // Position the dropdown
+                const rect = cell.getBoundingClientRect();
+                dropdown.style.left = `${rect.left}px`;
+                dropdown.style.top = `${rect.bottom}px`;
+                
+                // Show the dropdown
+                dropdown.classList.add('show');
+                
+                // Set current cell as active
+                dropdown.setAttribute('data-active-cell', `${cell.getAttribute('data-date')}-${cell.getAttribute('data-employee')}`);
+                
+                // Add click event listener for dropdown options
+                const options = dropdown.querySelectorAll('a');
+                options.forEach(option => {
+                    option.onclick = function(e) {
+                        e.stopPropagation(); // Prevent event from closing dropdown immediately
+                        const value = this.getAttribute('data-value');
+                        setVacation(cell, value);
+                        dropdown.classList.remove('show');
+                        document.removeEventListener('click', closeDropdown);
+                    };
+                });
+                
+                // Remove any existing click listener first
+                document.removeEventListener('click', closeDropdown);
+                
+                // Add with slight delay to prevent immediate closing
+                setTimeout(() => {
+                    document.addEventListener('click', closeDropdown);
+                }, 100);
+            }
+            
+            // Close dropdown menu
+            function closeDropdown(event) {
+                const dropdown = document.getElementById('vacation-dropdown');
+                // Fix: Check if the clicked element is the cell that opened the dropdown
+                const activeCell = document.querySelector(`td[data-date="${dropdown.getAttribute('data-active-cell')?.split('-')[0]}"][data-employee="${dropdown.getAttribute('data-active-cell')?.split('-').slice(1).join('-')}"]`);
+                
+                if (!dropdown.contains(event.target) && event.target !== activeCell) {
+                    dropdown.classList.remove('show');
+                    document.removeEventListener('click', closeDropdown);
+                }
+            }
+            
+            // Set vacation for a cell
+            function setVacation(cell, value) {
+                // Remove existing vacation classes
+                cell.classList.remove('vacation-u', 'vacation-k', 'vacation-gz');
+                
+                // Set new vacation value
+                cell.textContent = value;
+                
+                if (value) {
+                    cell.classList.add(`vacation-${value}`);
+                }
+                
+                // Update vacation counter
+                updateVacationCounter(cell.getAttribute('data-employee'));
+                
+                // Save to localStorage to persist data
+                saveVacationData();
+            }
+            
+            // Save vacation data to file system (Electron) or localStorage (Web)
+            async function saveVacationData() {
+                const vacationData = {};
+                
+                employees.forEach(employee => {
+                    vacationData[employee] = [];
+                    const cells = document.querySelectorAll(`td[data-employee="${employee}"]:not(.weekend):not(.vacation-counter):not(.holiday)`);
+                    
+                    cells.forEach(cell => {
+                        if (cell.textContent) {
+                            vacationData[employee].push({
+                                date: cell.getAttribute('data-date'),
+                                value: cell.textContent
+                            });
+                        }
+                    });
+                });
+                
+                // Check if running in Electron
+                if (window.electronAPI) {
+                    try {
+                        // Save using Electron API
+                        const result = await window.electronAPI.saveVacationData(currentYear, vacationData);
+                        
+                        if (!result.success) {
+                            console.error('Fehler beim Speichern der Daten:', result.error);
+                        }
+                    } catch (error) {
+                        console.error('Fehler beim Speichern der Daten:', error);
+                    }
+                } else {
+                    // Fallback to localStorage for web version
+                    localStorage.setItem(`vacationPlanner${currentYear}`, JSON.stringify(vacationData));
+                }
+            }
+            
+            // Load vacation data from file system (Electron) or localStorage (Web)
+            async function loadVacationData() {
+                let vacationData = null;
+                
+                // Check if running in Electron
+                if (window.electronAPI) {
+                    try {
+                        // Load using Electron API for specific year
+                        const result = await window.electronAPI.loadVacationDataForYear(currentYear);
+                        
+                        if (result.success && result.vacationData) {
+                            vacationData = result.vacationData;
+                        }
+                    } catch (error) {
+                        console.error('Fehler beim Laden der Daten:', error);
+                    }
+                } else {
+                    // Fallback to localStorage for web version
+                    const savedData = localStorage.getItem(`vacationPlanner${currentYear}`);
+                    if (savedData) {
+                        vacationData = JSON.parse(savedData);
+                    }
+                }
+                
+                // Apply data if available
+                if (vacationData) {
+                    Object.keys(vacationData).forEach(employee => {
+                        // Skip if employee doesn't exist anymore
+                        if (!employees.includes(employee)) return;
+                        
+                        vacationData[employee].forEach(entry => {
+                            const cell = document.querySelector(`td[data-employee="${employee}"][data-date="${entry.date}"]`);
+                            
+                            if (cell) {
+                                // Use a modified version of setVacation to avoid recursive saving
+                                cell.classList.remove('vacation-u', 'vacation-k', 'vacation-gz');
+                                cell.textContent = entry.value;
+                                
+                                if (entry.value) {
+                                    cell.classList.add(`vacation-${entry.value}`);
+                                }
+                            }
+                        });
+                        
+                        // Update counter after loading all entries
+                        updateVacationCounter(employee);
+                    });
+                }
+            }
+            
+            // Update vacation counter for an employee
+            function updateVacationCounter(employee) {
+                const cells = document.querySelectorAll(`td[data-employee="${employee}"]`);
+                let vacationCount = 0;
+                
+                cells.forEach(cell => {
+                    if (cell.textContent === 'u') {
+                        vacationCount++;
+                    }
+                });
+                
+                const counterCell = document.querySelector(`.vacation-counter[data-employee="${employee}"]`);
+                if (counterCell) {
+                    counterCell.textContent = vacationCount;
+                }
+            }
+            
+            // Function to scroll to current day
+            function scrollToCurrentDay() {
+                const today = new Date();
+                const formattedDate = formatDate(today);
+                
+                // Find the current day cell
+                const currentDayCell = document.querySelector(`th[data-date="${formattedDate}"]`);
+                
+                if (currentDayCell) {
+                    // Get the current month based on today's date
+                    const currentMonth = today.getMonth();
+                    
+                    // Calculate approximate position to scroll to
+                    const daysPerMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                    let daysBefore = 0;
+                    
+                    // Count days in previous months
+                    for (let i = 0; i < currentMonth; i++) {
+                        daysBefore += daysPerMonth[i];
+                    }
+                    
+                    // Add days in current month
+                    daysBefore += today.getDate() - 1;
+                    
+                    // Calculate approximate scroll position (25px is the cell width)
+                    const scrollPosition = daysBefore * 25;
+                    
+                    // Scroll the container to show the current day
+                    const container = document.querySelector('.container');
+                    container.scrollLeft = scrollPosition - (container.clientWidth / 2) + 25;
+                    
+                    // Highlight the current day more prominently
+                    const allTodayCells = document.querySelectorAll('.today');
+                    allTodayCells.forEach(cell => {
+                        cell.style.boxShadow = '0 0 8px 2px rgba(255, 0, 0, 0.5)';
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>
